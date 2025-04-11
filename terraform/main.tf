@@ -20,7 +20,7 @@ provider "azurerm" {
 # Create resource group
 resource "azurerm_resource_group" "rg" {
   name     = "speech-to-text-rg"
-  location = "westeurope"
+  location = "japaneast"
 }
 
 # Create virtual network
