@@ -40,6 +40,35 @@
   import { ref } from 'vue';
 
   const transcribedText = ref('');
-  transcribedText.value = 'Transcribed text will beaa displayed here.';
+  const selectedFile = ref(null);
 
+  async function transcribeAudio(){
+    console.log(selectedFile.value.name);
+    if (!selectedFile.value) return;
+
+    const formData = new FormData();
+    formData.append('audio_file', selectedFile.value);
+
+    // Show loading state
+    transcribedText.value = 'Transcribing...';
+
+    try {
+      const response = await fetch('http://localhost:8000/transcribe/', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(data)
+      transcribedText.value = data.content || 'No transcription returned';
+    } catch (error) {
+      console.error('Error during transcription:', error);
+      transcribedText.value = 'Error during transcription. Please try again.';
+    }
+  }
+  
 </script>
