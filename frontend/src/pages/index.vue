@@ -6,6 +6,7 @@
           <v-card-title class="text-center">Audio Transcription</v-card-title>
           
           <v-file-upload
+            v-model="selectedFile"
             accept="audio/*"
             outlined
             density="comfortable"
@@ -13,7 +14,15 @@
             class="mt-4"
             hide-details
           ></v-file-upload>
-          
+          <v-btn
+            color="primary"
+            class="mt-3"
+            block
+            @click="transcribeAudio"
+            :disabled="!selectedFile"
+          >
+            Transcribe Audio
+          </v-btn>
           <v-divider class="my-4"></v-divider>
           
           <v-card-subtitle class="pb-0">Transcribed Text</v-card-subtitle>
