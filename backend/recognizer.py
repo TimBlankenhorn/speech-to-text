@@ -13,6 +13,7 @@ class Recognizer:
         # Create a temporary file
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{audio_file.filename.split('.')[-1]}")
         try:
+            await audio_file.seek(0)
             # Write content to the temporary file
             content = await audio_file.read()
             temp_file.write(content)
