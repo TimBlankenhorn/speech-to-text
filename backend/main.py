@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi import FastAPI, File, UploadFile, HTTPException
 import tempfile
 import os
-
+from recognizer import Recognizer
 app = FastAPI()
 
 @app.get("/")
@@ -22,7 +22,13 @@ async def transcribe_audio(audio_file: UploadFile):
     valid_types = ["wav", "mp3"]
     if not ending in valid_types:
         raise HTTPException(status_code=400, detail="File must be an audio file")
+    
+    recognizer = Recognizer()
+    file_path = await recognizer.convert_audio_file_to_path(audio_file)
+    text = recognizer.handleSpeech(file_path)
+    print(text)
+    
     return {
         "filename": audio_file.filename,
-        "content_type": audio_file.content_type
+        "content": text
     }
