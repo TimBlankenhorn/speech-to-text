@@ -7,7 +7,7 @@
           
           <v-file-upload
             v-model="selectedFile"
-            accept="audio/*"
+            accept=".wav"
             outlined
             density="comfortable"
             variant="outlined"

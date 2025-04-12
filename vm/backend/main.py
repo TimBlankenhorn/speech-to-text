@@ -29,7 +29,7 @@ def read_item(item_id: int, q: Union[str, None] = None):
 @app.post("/transcribe/")
 async def transcribe_audio(audio_file: UploadFile):
     ending = audio_file.filename.lower().split(".")[-1]
-    valid_types = ["wav", "mp3"]
+    valid_types = ["wav"]
     if not ending in valid_types:
         raise HTTPException(status_code=400, detail="File must be an audio file")
     
