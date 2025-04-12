@@ -5,6 +5,7 @@ resource "local_file" "ansible_inventory" {
     ssh_key_path = "/home/vboxuser/.ssh/id_ed25519"
   })
   filename = "../ansible/inventory.ini"
+
 }
 
 resource "local_sensitive_file" "backend_env" {
@@ -19,7 +20,7 @@ EOT
 
 resource "local_file" "frontend_env" {
   content = <<-EOT
-VITE_API_URL=http://localhost:8001/transcribe/
+VITE_API_URL=http://${azurerm_public_ip.public_ip.ip_address}:8001/transcribe/
 EOT
   filename = "../vm/frontend/.env"
 }
