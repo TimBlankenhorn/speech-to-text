@@ -19,8 +19,6 @@ services:
     container_name: speech-to-text-frontend
     ports:
       - "3001:80"
-    environment:
-      - VITE_API_URL=http://localhost:8001/transcribe/
     depends_on:
       - backend
     restart: unless-stopped
