@@ -1,0 +1,45 @@
+---
+- name: Deploy Speech-to-Text Application to VM
+  hosts: terraform_vms
+  become: true
+  vars:
+    project_root: "/home/vboxuser/Documents/speech-to-text"
+    destination_path: "/opt/speech-to-text"
+
+  tasks:
+    - name: Ensure Docker is installed
+      package:
+        name:
+          - docker
+          - docker-compose
+        state: present
+      become: true
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+      become: true
+
+    - name: Create destination directory
+      file:
+        path: "{{ destination_path }}"
+        state: directory
+        mode: '0755'
+      become: true
+
+    - name: Sync VM directory to target machine
+      synchronize:
+        src: "{{ project_root }}/vm/"
+        dest: "{{ destination_path }}"
+        rsync_opts:
+          - "--exclude=node_modules"
+          - "--exclude=.git"
+      delegate_to: localhost
+
+    - name: Run docker-compose up
+      community.docker.docker_compose:
+        project_src: "{{ destination_path }}"
+        state: present
+      become: true
