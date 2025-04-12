@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: speech-to-text-backend
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: speech-to-text-frontend
+    ports:
+      - "3001:80"
+    environment:
+      - VITE_API_URL=http://localhost:8001/transcribe/
+    depends_on:
+      - backend
+    restart: unless-stopped
