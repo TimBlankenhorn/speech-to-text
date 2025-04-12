@@ -25,7 +25,15 @@
           </v-btn>
           <v-divider class="my-4"></v-divider>
           
-          <v-card-subtitle class="pb-0">Transcribed Text</v-card-subtitle>
+          <v-card-subtitle class="pb-0">Transcribed Text 
+            <v-chip v-if="transcriptionSource" 
+                   size="small" 
+                   class="ml-2" 
+                   variant="flat"
+                   :color="transcriptionSource === 'database' ? 'primary' : 'green'">
+              {{ transcriptionSource }}
+            </v-chip>
+          </v-card-subtitle>
           <v-card-text class="pt-2">
             <div v-if="transcribedText" class="text-body-1 pa-2 rounded bg-grey-lighten-4">{{ transcribedText }}</div>
             <div v-else class="text-caption text-grey text-center pa-4">No transcribed text available</div>
@@ -41,8 +49,11 @@
 
   const transcribedText = ref('');
   const selectedFile = ref(null);
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const transcriptionSource = ref('')
 
   async function transcribeAudio(){
+    transcriptionSource.value = ""
     console.log(selectedFile.value.name);
     if (!selectedFile.value) return;
 
@@ -53,7 +64,7 @@
     transcribedText.value = 'Transcribing...';
 
     try {
-      const response = await fetch('http://localhost:8000/transcribe/', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       });
@@ -65,6 +76,7 @@
       const data = await response.json();
       console.log(data)
       transcribedText.value = data.content || 'No transcription returned';
+      transcriptionSource.value = data.origin || ''
     } catch (error) {
       console.error('Error during transcription:', error);
       transcribedText.value = 'Error during transcription. Please try again.';
