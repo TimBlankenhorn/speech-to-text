@@ -7,11 +7,60 @@
     destination_path: "/opt/speech-to-text"
 
   tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: yes
+      become: true
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      become: true
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        update_cache: yes
+      become: true
+
+    - name: Install Docker Engine
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+      become: true
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+      become: true
+
+    - name: Add user to docker group
+      user:
+        name: azureuser
+        groups: docker
+        append: yes
+      become: true
     - name: Ensure Docker is installed
       package:
         name:
           - docker
-          - docker-compose
         state: present
       become: true
 
@@ -22,11 +71,21 @@
         enabled: true
       become: true
 
+    # Continue with your existing tasks
     - name: Create destination directory
       file:
         path: "{{ destination_path }}"
         state: directory
         mode: '0755'
+      become: true
+      
+    - name: Change ownership of destination directory
+      file:
+        path: "{{ destination_path }}"
+        state: directory
+        owner: azureuser
+        group: azureuser
+        recurse: yes
       become: true
 
     - name: Sync VM directory to target machine
@@ -37,9 +96,10 @@
           - "--exclude=node_modules"
           - "--exclude=.git"
       delegate_to: localhost
+      become: false
 
-    - name: Run docker-compose up
-      community.docker.docker_compose:
-        project_src: "{{ destination_path }}"
-        state: present
+    - name: Run docker compose up
+      command:
+        cmd: docker compose up -d
+        chdir: "{{ destination_path }}"
       become: true
