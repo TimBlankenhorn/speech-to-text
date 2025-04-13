@@ -6,6 +6,7 @@
     project_root: "/home/vboxuser/Documents/speech-to-text"
     destination_path: "/opt/speech-to-text"
 
+
   tasks:
     - name: Install required packages
       apt:
@@ -71,7 +72,6 @@
         enabled: true
       become: true
 
-    # Continue with your existing tasks
     - name: Create destination directory
       file:
         path: "{{ destination_path }}"
@@ -98,8 +98,57 @@
       delegate_to: localhost
       become: false
 
-    - name: Run docker compose up
+    - name: Run VM docker-compose with frontend and backend
       command:
         cmd: docker compose up -d --force-recreate
         chdir: "{{ destination_path }}"
+      become: true
+
+
+
+    - name: Create Grafana directory
+      file:
+        path: "/opt/grafana"
+        state: directory
+        mode: '0755'
+        owner: azureuser
+        group: azureuser
+      become: true
+
+    - name: Create Prometheus directory
+      file:
+        path: "/opt/prometheus"
+        state: directory
+        mode: '0755'
+        owner: azureuser
+        group: azureuser
+      become: true
+
+    - name: Sync Grafana provisioning directory
+      synchronize:
+        src: "{{ project_root }}/grafana/"
+        dest: "/opt/grafana"
+        rsync_opts:
+          - "--exclude=.git"
+      delegate_to: localhost
+      become: false
+
+    - name: Create Prometheus configuration
+      template:
+        src: "{{ project_root }}/grafana/prometheus.yml.j2"
+        dest: "/opt/prometheus/prometheus.yml"
+        mode: '0644'
+      become: true
+
+    - name: Create docker-compose for monitoring
+      template:
+        src: "{{ project_root }}/grafana/docker-compose-monitoring.yml"
+        dest: "/opt/grafana/docker-compose.yml"
+        mode: '0644'
+      become: true
+
+    - name: Start Grafana and Prometheus containers
+      command:
+        cmd: docker compose up -d --force-recreate
+        chdir: "/opt/grafana"
       become: true
